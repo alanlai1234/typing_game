@@ -1,33 +1,25 @@
 #include "side.cpp"
 // TODO : able perform multi-paragraph article typing
-
-void main_scr(){
-	mvprintw(1, 0, "test your typing limit!\n");
-}
-
-void clock_win(){
-	refresh();
-	WINDOW *c_win=newwin(3,30, 0, 30);
-	box(c_win, 0, 0);
-	mvwprintw(c_win,0, 2, "count down");
-	int count=10;
-	mvwprintw(c_win, 1,1, "0");
-	wrefresh(c_win);
-	time_t tt=time(NULL), origin=time(NULL);
-	while (count>tt-origin){
-		tt=time(NULL);
-		mvwprintw(c_win, 1,1, "%ld", tt-origin);
-		wrefresh(c_win);
-	}
-}
+// TODO : enhance wpm calculation
 
 int main(){
 	
 	curse_init();
-	// TODO menu
-	printw("typing test---------------------------------------------");
-	article();
-
+	printw("typing test---------------------------------------------\n\n");
+	// menu
+	vector <string> menu = {"1) article 2) count down q) exit"};
+	int cur=0;
+	char key;
+	addstr("1) article 2) count down q) exit");
+	key=getch();
+	switch (key){
+		case '1':
+			article();
+			break;
+		case 'q':
+			break;
+	}
+	
 	//getch();
 	endwin();
 	return 0;
@@ -38,11 +30,12 @@ void article(){
 	WINDOW *win=newwin(LINES, COLS, 2, 0);
 	refresh();
 	touchwin(win);
-	wrefresh(win);
+	//wrefresh(win);
+	PANEL *pan=new_panel(win);
+	update_panels();
+	doupdate();
 
 	
-
-
 	//random_device rd;
 	//int rrand = rd()%;
 	ifstream fp;
@@ -54,72 +47,89 @@ void article(){
 	string text = ss.str();
 	int ch, spot=0;
 	int size_save=text.size()-1;
-	vector< pair<int, int> > pos = alignment(text, COLS); // access it when started typing
-	
-	// print it out
-	wprintw(win, text.c_str());
+	vector<string> split=doSegment(text); // split the text with \n
+	vector < vector< pair<int, int> > > pos; // access it when started typing
+	for ( string i : split ){
+		// generate alignment and print it out
+		pos.push_back(alignment(i, COLS));
+		wprintw(win, "%s\n", i.c_str());
+	}
+
 	fp.close();
 
 	// setting for ready
 	wmove(win, 0, 0);
-	waddch(win, text[0] | A_UNDERLINE);
-	wrefresh(win);
-	init_pair(1, COLOR_RED, -1);
-	init_pair(2, COLOR_GREEN, -1);
-	init_pair(3, -1, COLOR_RED);
-	vector< pair<int, int> >::iterator it = pos.begin();
+	waddch(win, split[0][0] | A_UNDERLINE);
+	vector< pair<int, int> >::iterator it = pos[0].begin();
 	int errors=0;
 	spot=0;
 
-	//// starting timing
+	// starting countdown
+	clock_win("starting in", 3, 15, 2);
+
+	// start timing
 	auto START = steady_clock::now();
 
 	//// start typing
-	while (spot < text.size()-1){
-		ch=wgetch(win);
-		if(ch=='1'){
-			return;
-		}
-		if(ch==DELETE){
-			if(spot!=0){
-				mvwaddch(win, spot/COLS, spot%COLS, text[spot]);
-				--spot;
-				if(spot == (it-1)->first+(it-1)->second-1){
-					--it;
-					spot-=it->second-1;
-				}
+	while(1){
+		// TODO : split the string here
+		while (text[spot-1]!='\n' || text[spot-1]!='\0'){
+			ch=wgetch(win);
+			if(ch=='1'){
+				delwin(win);
+				return;
 			}
-			else{
-				continue;
-			}
-		}
-		else{
-			if(ch==text[spot]){
-				mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(2));
-			}
-			else{
-				++errors;
-				if(text[spot] == ' '){
-					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(3));
+			if(ch==DELETE){
+				if(spot!=0){
+					mvwaddch(win, spot/COLS, spot%COLS, text[spot]);
+					--spot;
+					if(spot == (it-1)->first+(it-1)->second-1){
+						--it;
+						spot-=it->second-1;
+					}
 				}
 				else{
-					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(1));
+					continue;
 				}
 			}
-			// check if the there is extra space for alignment
-			if(spot == it->first){
-				spot+=it->second;
-				++it;
-			}
-			else {
-				++spot;
-			}
+			else{
+				if(ch==text[spot]){
+					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(green));
+				}
+				else{
+					++errors;
+					if(text[spot] == ' '){
+						mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(bg_red));
+					}
+					else{
+						mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(red));
+						}
+				}
+				// check if the there is extra space for alignment
+				if(spot == it->first){
+					spot+=it->second;
+					++it;
+				}
+				else {
+					++spot;
+				}
+			
+			mvwaddch(win, spot/COLS, spot%COLS, text[spot] | A_UNDERLINE);
 		}
-		mvwaddch(win, spot/COLS, spot%COLS, text[spot] | A_UNDERLINE);
+		
+		if(text[spot-1]=='\0'){
+			break;
+		}
+		//else{
+			
+		//}
+		
+		}
 	}
 	auto END = steady_clock::now();
 	auto dur = duration_cast<seconds>(END-START);
-	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.*f", 0, ((size_save/5)-errors)/(dur.count()/60.000));
+	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.*f", 0, ((size_save/5))/(dur.count()/60.000));
 	wgetch(win);
+	delwin(win);
 }
 
