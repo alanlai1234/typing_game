@@ -1,2 +1,3 @@
 Copying directories on Linux is a big part of every system administrator routine.
-This is a very tedious thing to type about but this is just a test. This line is also another test for my program.
+This is a very tedious thing to type about but this is just a test.
+This line is also another test for my program.

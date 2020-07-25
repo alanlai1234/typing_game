@@ -47,6 +47,14 @@ vector <pair<int, int> > alignment (string &s, int col){
 			spc.first=-1;
 			spc.second=0;
 		}
+		else if(s[spot]=='\n'){
+			spc.first=spot;
+			spc.second=col-(spot%col);
+			s[spot]=' ';
+			s.insert(spot, string(spc.second-1, ' '));
+			spot+=spc.second+1;
+			pos.push_back(spc);
+		}
 		else if(s[spot]!=' ' && spc.first>-1){
 			spc.second+=1;
 			if(spot%col==0 ){
@@ -72,7 +80,7 @@ void clock_win(string text, int count, int x, int y){
 	PANEL *c_pan=new_panel(c_win);
 	update_panels();
 	doupdate();
-	wattron(c_win, COLOR_PAIR(4));
+	wattron(c_win, COLOR_PAIR(yellow));
 	box(c_win, 0, 0);
 	mvwprintw(c_win,0, 2, text.c_str());
 	wrefresh(c_win);
