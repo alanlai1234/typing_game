@@ -1,6 +1,6 @@
 #include "side.cpp"
-// TODO : able perform multi-paragraph article typing
 // TODO : enhance wpm calculation
+// TODO : make menu with menu.h
 
 int main(){
 	
@@ -16,6 +16,10 @@ int main(){
 		case '1':
 			article();
 			break;
+
+		case '2':
+			break;
+
 		case 'q':
 			break;
 	}
@@ -116,3 +120,13 @@ void article(){
 	delwin(win);
 }
 
+void countdown(){
+	WINDOW *win=newwin(LINES, COLS, 2, 0);
+	refresh();
+	touchwin(win);
+	PANEL *pan=new_panel(win);
+	update_panels();
+	doupdate();
+
+	//use_window(win, , void *)
+}

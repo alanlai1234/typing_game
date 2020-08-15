@@ -21,7 +21,7 @@ using namespace std;
 using namespace std::chrono;
 
 void article();	
-void getready();
+void countdown();
 
 void curse_init(){
 	initscr();
@@ -54,16 +54,16 @@ vector <pair<int, int> > alignment (string &s, int col){
 			s.insert(spot, string(spc.second-1, ' '));
 			spot+=spc.second+1;
 			pos.push_back(spc);
+			continue;
 		}
 		else if(s[spot]!=' ' && spc.first>-1){
-			spc.second+=1;
+			++spc.second;
 			if(spot%col==0 ){
 				s.insert(spc.first, string(spc.second-1, ' '));
 				pos.push_back(spc);
 				spot+=spc.second;
 				continue;
 			}
-			
 		}
 		else{
 			spc.first=spot;
