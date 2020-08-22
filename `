@@ -119,7 +119,7 @@ void article(){
 	auto dur = duration_cast<seconds>(END-START);
 	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.*f", 0, ((size_save/5))/(dur.count()/60.000));
 	wgetch(win);
-	del_panel(pan);
+	del_panel(pan)
 	delwin(win);
 }
 
