@@ -1,5 +1,4 @@
 #include "side.cpp"
-// TODO : enhance wpm calculation
 // TODO : make menu with menu.h
 
 int main(){
@@ -34,33 +33,20 @@ void article(){
 	WINDOW *win=newwin(LINES, COLS, 2, 0);
 	refresh();
 	touchwin(win);
-	//wrefresh(win);
+
 	PANEL *pan=new_panel(win);
 	update_panels();
 	doupdate();
 
-	
-	//random_device rd;
-	//int rrand = rd()%;
-	ifstream fp;
-	fp.open("articles/1.txt");
-	
-	// read from file
-	stringstream ss;
-	ss << fp.rdbuf();
-	string text=ss.str();
-	text[text.size()-1]=' ';
-	int ch;
-	int size_save = text.size()-1;
-	vector< pair<int, int> >pos = alignment(text, COLS); // access it when started typing
 
-	wprintw(win, text.c_str());
-	fp.close();
+	char ch;
+	int spot=0, size_save;
+	vector<int> errors;
+	string text;
+	vector< pair<int, int> >pos;
+	text_init(win, text, size_save, pos);
 
-	// setting for ready
-	wmove(win, 0, 0);
 	vector< pair<int, int> >::iterator it = pos.begin();
-	int errors=0, spot=0;
 
 	// starting countdown
 	clock_win("starting in", 3, 15, 2);
@@ -68,10 +54,12 @@ void article(){
 	// start timing
 	auto START = steady_clock::now();
 
-	//// start typing
+	 //start typing
 	while (spot<text.size()-1){
 		ch=wgetch(win);
-		if(ch=='1'){
+		// control+d to stop 
+		if(ch == ctrl('d')){
+			del_panel(pan);
 			delwin(win);
 			return;
 		}
@@ -79,9 +67,14 @@ void article(){
 			if(spot!=0){
 				mvwaddch(win, spot/COLS, spot%COLS, text[spot]);
 				--spot;
+				// check if it is on a alignment
 				if(spot == (it-1)->first+(it-1)->second-1){
 					--it;
 					spot-=it->second-1;
+				}
+				// check if it is on a error made previously
+				if(errors.back()==spot){
+					errors.pop_back();
 				}
 			}
 			else{
@@ -93,15 +86,16 @@ void article(){
 				mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(green));
 			}
 			else{
-				++errors;
+				// acount the errors
+				errors.push_back(spot);
 				if(text[spot] == ' '){
 					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(bg_red));
 				}
 				else{
 					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(red));
-					}
+				}
 			}
-			// check if the there is extra space for alignment
+			// check if the there it is in a alignment
 			if(spot == it->first){
 				spot+=it->second;
 				++it;
@@ -115,8 +109,9 @@ void article(){
 	//wdelch(win);
 	auto END = steady_clock::now();
 	auto dur = duration_cast<seconds>(END-START);
-	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.*f", 0, ((size_save/5))/(dur.count()/60.000));
+	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.3f, %.3f", 0, ((size_save/5)-(float)errors.size())/(dur.count()));
 	wgetch(win);
+	del_panel(pan);
 	delwin(win);
 }
 
@@ -128,5 +123,7 @@ void countdown(){
 	update_panels();
 	doupdate();
 
-	//use_window(win, , void *)
+	auto clock_a = async(launch::async, clock_win, "countdown", 60, 0, 0);
+
+	
 }

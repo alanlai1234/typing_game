@@ -2,7 +2,6 @@
 #include <panel.h>
 #include <chrono>
 #include <vector>
-#include <dirent.h>
 #include <fstream>
 #include <ncurses.h>
 #include <sstream>
@@ -10,18 +9,21 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <future>
 
 #define DELETE 127
 #define red 1
 #define green 2
 #define bg_red 3
 #define yellow 4
+#define ctrl(x)   ((x) & 0x1f)
 
 using namespace std;
 using namespace std::chrono;
 
 void article();	
 void countdown();
+int time_count;
 
 void curse_init(){
 	initscr();
@@ -31,6 +33,8 @@ void curse_init(){
 	keypad(stdscr, TRUE);
 	curs_set(0);
 	noecho();
+	cbreak();
+	nonl();
 	init_pair(1, COLOR_RED, -1);
 	init_pair(4, COLOR_YELLOW, -1);
 	init_pair(2, COLOR_GREEN, -1);
@@ -96,3 +100,23 @@ void clock_win(string text, int count, int x, int y){
 	refresh();
 }
 
+// set up text for typing
+void text_init(WINDOW *win, string &text, int &size_save, vector< pair<int, int> >&pos){
+
+	//random_device rd;
+	//int rrand = rd()%;
+	ifstream fp;
+	fp.open("articles/1.txt");
+	
+	// read from file
+	stringstream ss;
+	ss << fp.rdbuf();
+	text=ss.str();
+	text[text.size()-1]=' ';
+	size_save = text.size()-1;
+	pos = alignment(text, COLS); // access it when started typing
+
+	wprintw(win, text.c_str());
+	fp.close();
+
+}
