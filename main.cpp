@@ -1,4 +1,5 @@
 #include "side.cpp"
+// TODO: wpm calculation bug!!
 // TODO : make menu with menu.h
 
 int main(){
@@ -109,7 +110,7 @@ void article(){
 	//wdelch(win);
 	auto END = steady_clock::now();
 	auto dur = duration_cast<seconds>(END-START);
-	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.3f, %.3f", 0, ((size_save/5)-(float)errors.size())/(dur.count()));
+	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.3f", 0, ((size_save/5)-(float)errors.size())/(dur.count()));
 	wgetch(win);
 	del_panel(pan);
 	delwin(win);
