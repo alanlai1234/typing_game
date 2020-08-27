@@ -1,6 +1,4 @@
 #include "side.cpp"
-// TODO: wpm calculation bug!!
-// TODO : make menu with menu.h
 
 int main(){
 	
@@ -18,6 +16,7 @@ int main(){
 			break;
 
 		case '2':
+			countdown();
 			break;
 
 		case 'q':
@@ -50,7 +49,7 @@ void article(){
 	vector< pair<int, int> >::iterator it = pos.begin();
 
 	// starting countdown
-	//clock_win("starting in", 3, 15, 2);
+	clock_win("starting in", 3, 15, 2);
 
 	// start timing
 	auto START = steady_clock::now();
@@ -124,7 +123,71 @@ void countdown(){
 	update_panels();
 	doupdate();
 
-	auto clock_a = async(launch::async, clock_win, "countdown", 60, 0, 0);
+	auto clock_a = async(launch::async, clock_win, "countdown", 10, 0, 0);
 
 	
+	char ch;
+	int spot=0, size_save;
+	vector<int> errors;
+	string text;
+	vector< pair<int, int> >pos;
+	text_init(win, text, size_save, pos);
+
+	vector< pair<int, int> >::iterator it = pos.begin();
+
+	// start timing
+	auto START = steady_clock::now();
+
+	 //start typing
+	while (spot<text.size()-1){
+		ch=wgetch(win);
+		// control+d to stop 
+		if(ch == ctrl('d')){
+			del_panel(pan);
+			delwin(win);
+			return;
+		}
+		if(ch==DELETE){
+			if(spot!=0){
+				mvwaddch(win, spot/COLS, spot%COLS, text[spot]);
+				--spot;
+				// check if it is on a alignment
+				if(spot == (it-1)->first+(it-1)->second-1){
+					--it;
+					spot-=it->second-1;
+				}
+				// check if it is on a error made previously
+				if(errors.back()==spot){
+					errors.pop_back();
+				}
+			}
+			else{
+				continue;
+			}
+		}
+		else{
+			if(ch==text[spot]){
+				mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(green));
+			}
+			else{
+				// acount the errors
+				errors.push_back(spot);
+				if(text[spot] == ' '){
+					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(bg_red));
+				}
+				else{
+					mvwaddch(win, spot/COLS, spot%COLS, text[spot] | COLOR_PAIR(red));
+				}
+			}
+			// check if the there it is in a alignment
+			if(spot == it->first){
+				spot+=it->second;
+				++it;
+			}
+			else {
+				++spot;
+			}
+		}
+		mvwaddch(win, spot/COLS, spot%COLS, text[spot] | A_UNDERLINE);
+	}
 }
