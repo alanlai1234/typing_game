@@ -50,7 +50,7 @@ void article(){
 	vector< pair<int, int> >::iterator it = pos.begin();
 
 	// starting countdown
-	clock_win("starting in", 3, 15, 2);
+	//clock_win("starting in", 3, 15, 2);
 
 	// start timing
 	auto START = steady_clock::now();
@@ -110,7 +110,7 @@ void article(){
 	//wdelch(win);
 	auto END = steady_clock::now();
 	auto dur = duration_cast<seconds>(END-START);
-	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.3f", 0, ((size_save/5)-(float)errors.size())/(dur.count()));
+	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.1f", (float)((size_save/5)-errors.size())/((float)dur.count()/60.00));
 	wgetch(win);
 	del_panel(pan);
 	delwin(win);
