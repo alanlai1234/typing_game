@@ -1,11 +1,12 @@
 #include "side.cpp"
+// TODO: stats system(show graph)
 
 int main(){
 	
 	curse_init();
 	printw("typing test---------------------------------------------\n\n");
 	// menu
-	vector <string> menu = {"1) article 2) count down q) exit"};
+	vector <string> menu = {"1) article 2) count down 3) stats q) exit"};
 	int cur=0;
 	char key;
 	addstr("1) article 2) count down q) exit");
@@ -17,6 +18,9 @@ int main(){
 
 		case '2':
 			countdown();
+			break;
+
+		case '3':
 			break;
 
 		case 'q':
@@ -109,7 +113,9 @@ void article(){
 	//wdelch(win);
 	auto END = steady_clock::now();
 	auto dur = duration_cast<seconds>(END-START);
-	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %.1f", (float)((size_save/5)-errors.size())/((float)dur.count()/60.00));
+	int score = (float)((size_save/5)-errors.size())/((float)dur.count()/60.00);
+	mvwprintw(win, (text.size()/COLS)+1, 0, "wpm : %d", score);
+	input_stats(score);
 	wgetch(win);
 	del_panel(pan);
 	delwin(win);
@@ -123,7 +129,7 @@ void countdown(){
 	update_panels();
 	doupdate();
 
-	auto clock_a = async(launch::async, clock_win, "countdown", 10, 0, 0);
+	auto clock_a = async(launch::async, clock_win, "countdown", 10, 0, LINES/2);
 
 	
 	char ch;
@@ -190,4 +196,7 @@ void countdown(){
 		}
 		mvwaddch(win, spot/COLS, spot%COLS, text[spot] | A_UNDERLINE);
 	}
+	wgetch(win);
+	del_panel(pan);
+	delwin(win);
 }

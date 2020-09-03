@@ -89,7 +89,7 @@ void clock_win(string text, int count, int x, int y){
 	mvwprintw(c_win,0, 2, text.c_str());
 	wrefresh(c_win);
 	for (int i=count;i>=0;--i){
-		mvwprintw(c_win, 1,1, "%d", i);
+		mvwprintw(c_win, 1,1, "%d   ", i);
 		this_thread::sleep_for(seconds(1));
 		wrefresh(c_win);
 	}
@@ -119,4 +119,11 @@ void text_init(WINDOW *win, string &text, int &size_save, vector< pair<int, int>
 	wprintw(win, text.c_str());
 	fp.close();
 
+}
+
+void input_stats(int point){
+	ofstream fp;
+	fp.open("stats.txt");
+	fp << point << endl;
+	fp.close();
 }
