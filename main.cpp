@@ -1,15 +1,14 @@
 #include "side.cpp"
-// TODO: stats system(show graph)
+// TODO: finish broken countdown mode
 
 int main(){
 	
 	curse_init();
 	printw("typing test---------------------------------------------\n\n");
 	// menu
-	vector <string> menu = {"1) article 2) count down 3) stats q) exit"};
-	int cur=0;
 	char key;
-	addstr("1) article 2) count down q) exit");
+	addstr("1) article 2) count down(broken) 3) stats q) exit");
+	
 	key=getch();
 	switch (key){
 		case '1':
@@ -21,16 +20,45 @@ int main(){
 			break;
 
 		case '3':
+			show_graph();
 			break;
 
 		case 'q':
 			break;
 	}
 	
-	//getch();
 	endwin();
 	return 0;
 
+}
+
+void show_graph(){
+	ifstream fp;
+	fp.open("stats.txt");
+	vector <int> points;
+	string res;
+
+	// read from file
+	while ( fp >> res ){
+		points.push_back(stoi(res));
+	}
+	
+	int unit = (int)((Max(points))/10); //how much point a row represents in the graph
+
+	for ( int i=10;i>=0;--i ){
+		printw("\n%2d|", unit*i);
+		for ( auto j : points ){
+		    if( (int)j/unit == i ){
+			  printw(" * ");
+		    }
+			else{
+				printw("     ");
+			}
+		}
+	}
+
+	fp.close();
+	getch();
 }
 
 void article(){

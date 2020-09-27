@@ -23,7 +23,19 @@ using namespace std::chrono;
 
 void article();	
 void countdown();
+void show_graph();
 int time_count;
+
+int Max(vector <int> in){
+	int M=in.at(0);
+	for (auto i : in){
+		if(i>M){
+			M=i;
+		}
+	}
+
+	return M;
+}
 
 void curse_init(){
 	initscr();
@@ -123,7 +135,7 @@ void text_init(WINDOW *win, string &text, int &size_save, vector< pair<int, int>
 
 void input_stats(int point){
 	ofstream fp;
-	fp.open("stats.txt");
+	fp.open("stats.txt", ios_base::app);
 	fp << point << endl;
 	fp.close();
 }
