@@ -7,7 +7,7 @@ int main(){
 	printw("typing test---------------------------------------------\n\n");
 	// menu
 	char key;
-	addstr("1) article 2) count down(broken) 3) stats q) exit");
+	addstr("1) article 2) count down(under construction) 3) stats q) exit");
 	
 	key=getch();
 	switch (key){
@@ -45,11 +45,15 @@ void show_graph(){
 	
 	int unit = (int)((Max(points))/10); //how much point a row represents in the graph
 
+	printw("\n");
+
 	for ( int i=10;i>=0;--i ){
 		printw("\n%2d|", unit*i);
 		for ( auto j : points ){
 		    if( (int)j/unit == i ){
-			  printw(" * ");
+				attron(COLOR_PAIR(yellow));
+				printw(" * ");
+				attroff(COLOR_PAIR(yellow));
 		    }
 			else{
 				printw("     ");
