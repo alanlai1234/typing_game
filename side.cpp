@@ -5,11 +5,12 @@
 #include <fstream>
 #include <ncurses.h>
 #include <sstream>
-#include <thread>
 #include <iostream>
 #include <string>
 #include <random>
-#include <future>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #define DELETE 127
 #define red 1
@@ -24,6 +25,8 @@ using namespace std::chrono;
 void article();	
 void countdown();
 void show_graph();
+condition_variable cv;
+mutex m; //just for condition variable
 int time_count;
 
 int Max(vector <int> in){
@@ -139,3 +142,99 @@ void input_stats(int point){
 	fp << point << endl;
 	fp.close();
 }
+
+class t_clock{
+	private:
+		string text;
+		int count, x, y, work;
+		mutex mu;
+		void win();
+		void except();
+		void sleep();
+
+	public:
+		t_clock(string t, int c, int a, int b);
+		
+		void start();
+};
+
+t_clock::t_clock(string t, int c, int a, int b){
+	this->text=t;
+	this->count=c;
+	this->x=a;
+	this->y=b;
+}
+
+void t_clock::win(){
+	refresh();
+	WINDOW *c_win=newwin(3,30, y, x);
+	PANEL *c_pan=new_panel(c_win);
+	update_panels();
+	doupdate();
+	wattron(c_win, COLOR_PAIR(yellow));
+	box(c_win, 0, 0);
+	mvwprintw(c_win,0, 2, text.c_str());
+	wrefresh(c_win);
+	int i=count;
+	while(1){
+		if( work == 1 ){
+			mvwprintw(c_win, 1,1, "%d   ", i--);
+			wrefresh(c_win);
+			mu.lock();
+			work=0;
+			mu.unlock();
+		}
+		else if( work == 2 ){
+			break;
+		}
+		else{
+			continue;
+		}
+	}
+	wattroff(c_win, COLOR_PAIR(yellow));
+	hide_panel(c_pan);
+	del_panel(c_pan);
+	delwin(c_win);
+	refresh();
+}
+
+void t_clock::sleep(){
+	for ( int a=0;a<count;++a){
+		this_thread::sleep_for(seconds(1));
+		mu.lock();
+		if(work==2){
+			break;
+		}
+		else{
+			work=1;
+		}
+		mu.unlock();
+	}
+	mu.lock();
+	work=2;
+	mu.unlock();
+	cv.notify_all();
+}
+
+void t_clock::except(){
+	//use conditional variable
+	unique_lock<mutex> lock(m);
+	cv.wait(lock);
+
+	mu.lock();
+	work=2;
+	mu.unlock();
+}
+
+void t_clock::start(){
+	thread w(&t_clock::win, this);
+	thread e(&t_clock::except, this);
+	//thread s(&t_clock::sleep, this);
+
+	w.join();
+	e.join();
+	//s.join();
+
+	work=0;
+}
+

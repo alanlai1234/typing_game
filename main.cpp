@@ -1,5 +1,5 @@
 #include "side.cpp"
-// TODO: finish broken countdown mode
+// TODO: use a DEBUGGER to test countdown function
 
 int main(){
 	
@@ -161,9 +161,9 @@ void countdown(){
 	update_panels();
 	doupdate();
 
-	auto clock_a = async(launch::async, clock_win, "countdown", 10, 0, LINES/2);
+	//auto clock_a = async(launch::async, clock_win, "countdown", 10, 0, LINES/2);
+	t_clock clockw("countdown", 10, 0, LINES/2);
 
-	
 	char ch;
 	int spot=0, size_save;
 	vector<int> errors;
@@ -175,12 +175,14 @@ void countdown(){
 
 	// start timing
 	auto START = steady_clock::now();
+	clockw.start();
 
 	 //start typing
 	while (spot<text.size()-1){
 		ch=wgetch(win);
 		// control+d to stop 
 		if(ch == ctrl('d')){
+			cv.notify_one();
 			del_panel(pan);
 			delwin(win);
 			return;
